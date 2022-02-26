@@ -55,3 +55,5 @@ There's one in `example` folder.
 You can have as many configs as you like, it will run in parallel ;)
 
 If you have a question direct them to Chubak#7400 on Discord.
+
+> This is only tested for MySQL but it should work for MSSQL and PostgreSQL the same because they use the same backend.
