@@ -57,3 +57,12 @@ You can have as many configs as you like, it will run in parallel ;)
 If you have a question direct them to Chubak#7400 on Discord.
 
 > This is only tested for MySQL but it should work for MSSQL and PostgreSQL the same because they use the same backend.
+
+
+Run:
+
+```
+go run . [optional: config file]
+```
+
+Or build first with `go build .` then run. Or build and install with `go install .`.... I mean there are dozens ways --- well, three ways!! But you get the gist.
