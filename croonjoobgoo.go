@@ -1,4 +1,4 @@
-package CroonJoobGoo
+package main
 
 import (
 	"CroonJoobGoo/cron"
@@ -33,6 +33,7 @@ func main() {
 
 	wg.Add(len(config))
 	for _, conf := range config {
+		log.Println("Launching CRON process for config path ", conf.ConfigPath)
 		conf := conf
 		go func() {
 			cron.RoutineExec(conf)

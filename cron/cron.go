@@ -1,36 +1,36 @@
 package cron
 
 import (
-	"time"
 	"CroonJoobGoo/mssqlrunner"
 	"CroonJoobGoo/mysqlrunner"
 	"CroonJoobGoo/postgresqlrunner"
-
+	"time"
 )
 
 type ExecTime struct {
-	Days    []int
-	Hours   []int
-	Minutes []int
+	Days       []int `json:"days"`
+	Hours      []int `json:"hours"`
+	Minutes    []int `json:"minutes"`
+	AllHours   bool  `json:"all_hours"`
+	AllMinutes bool  `json:"all_minutes"`
+	AllDays    bool  `json:"all_days"`
 }
 
-
-type SqlType	= string
+type SqlType = string
 
 const (
-	MSSQL 		SqlType 	= "MSSQL"
-	MYSQL 		SqlType		= "MYSQL"
-	POSTGRESQL	SqlType		= "POSTGRESQL"
+	MSSQL      SqlType = "MSSQL"
+	MYSQL      SqlType = "MYSQL"
+	POSTGRESQL SqlType = "POSTGRESQL"
 )
 
 type RunnerConfig struct {
-	Type  		SqlType 	`json:"sql_type"`
-	ExecTime	ExecTime	`json:"exec_time"`
-	ConfigPath	string		`json:"config_path"`
+	Type       SqlType  `json:"sql_type"`
+	ExecTime   ExecTime `json:"exec_time"`
+	ConfigPath string   `json:"config_path"`
 }
 
-func Contains(iterable []int, el int) bool
-{
+func Contains(iterable []int, el int) bool {
 	for _, v := range iterable {
 		if v == el {
 			return true
@@ -47,18 +47,16 @@ func CheckTimeIs(baseTime *ExecTime) bool {
 	hour := now.Hour()
 	minute := now.Minute()
 
-	dayIs := Contains(baseTime.Days, day)
-	hourIs := Contains(baseTime.Hours, hour)
-	minIs := Contains(baseTime.Minutes, minute)
+	dayIs := Contains(baseTime.Days, day) || baseTime.AllDays
+	hourIs := Contains(baseTime.Hours, hour) || baseTime.AllHours
+	minIs := Contains(baseTime.Minutes, minute) || baseTime.AllMinutes
 
-	if  dayIs && hourIs && minIs {
+	if dayIs && hourIs && minIs {
 		return true
 	}
 
 	return false
 }
-
-
 
 func RoutineExec(config RunnerConfig) {
 	tZero := time.Now()
@@ -73,25 +71,23 @@ func RoutineExec(config RunnerConfig) {
 
 		diffSecs = uint64(diff.Seconds())
 
-		if diffSecs % 5 == 0 {
+		if diffSecs%58 == 0 {
 			if CheckTimeIs(&config.ExecTime) {
 				switch config.Type {
 				case POSTGRESQL:
-					postgresqlrunner.RunScript(config.ConfigPath, )time.Now().Format("15:04:05")
+					postgresqlrunner.RunScript(config.ConfigPath, time.Now().Format("15:04:05"))
 				case MSSQL:
-					 mssqlrunner.RunScript(config.ConfigPath, time.Now().Format("15:04:05"))
+					mssqlrunner.RunScript(config.ConfigPath, time.Now().Format("15:04:05"))
 				case MYSQL:
 					mysqlrunner.RunScript(config.ConfigPath, time.Now().Format("15:04:05"))
 
 				}
 
+				time.Sleep(5 * time.Second)
 			}
+
 		}
-
-
 
 	}
 
 }
-
-

@@ -7,20 +7,16 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"io/ioutil"
 	"log"
+	"strings"
 )
 
-type Command struct {
-	Statement string      `json:"statement"`
-	Args      interface{} `json:"args"`
-}
-
 type Profile struct {
-	Username string    `json:"username"`
-	Password string    `json:"password"`
-	Host     string    `json:"Host"`
-	Database string    `json:"database"`
-	Port     string    `json:"port"`
-	Commands []Command `json:"commands"`
+	Username string   `json:"username"`
+	Password string   `json:"password"`
+	Host     string   `json:"Host"`
+	Database string   `json:"database"`
+	Port     string   `json:"port"`
+	Commands []string `json:"commands"`
 }
 
 func handleErr(err error) {
@@ -42,8 +38,10 @@ func RunScript(profileLocation string, time string) {
 
 	handleErr(err)
 
-	db, err := sql.Open("mysql",
-		fmt.Sprintf("%s:%sd@tcp(%s:%s)/%s", profile.Username, profile.Password, profile.Host, profile.Port, profile.Database))
+	loginString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+		profile.Username, profile.Password, profile.Host, profile.Port, profile.Database)
+
+	db, err := sql.Open("mysql", loginString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,9 +53,14 @@ func RunScript(profileLocation string, time string) {
 	log.Println("Logging Exec for file ", profileLocation)
 
 	for _, comm := range profile.Commands {
-		_, err = db.Exec(comm.Statement, comm.Args)
+		commMod := strings.Trim(comm, "")
+		commMod = strings.Trim(commMod, " ")
+		commMod = strings.Trim(commMod, "\n")
+		commMod = strings.Trim(commMod, "\r")
 
-		log.Println("Exec statement ", comm.Statement, " done!")
+		_, err = db.Exec(commMod)
+
+		log.Println("Exec statement ", comm, " done!")
 
 		handleErr(err)
 	}
