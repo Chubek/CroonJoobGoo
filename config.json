@@ -1,13 +1,13 @@
 [
   {
-    "sql_type": "MYSQL",
+    "sql_type": "POSTGRESQL",
     "exec_time": {
-        "days": [26, 27, 28],
+        "days": [],
         "hours": [],
-        "minutes": [13, 15, 16],
-        "all_minutes": false,
+        "minutes": [],
+        "all_minutes": true,
         "all_hours": true,
-        "all_days": false
+        "all_days": true
     },
     "config_path": "./example/runner_test.json"
   }

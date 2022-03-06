@@ -1,11 +1,14 @@
 {
-  "username": "superchubak",
-  "password": "supsup",
+  "username": "test_user",
+  "password": "test",
   "host": "localhost",
-  "database": "test_db",
-  "port": "3306",
+  "database": "test_user",
+  "port": "5432",
   "commands": [
     "CREATE TABLE Test (firstname varchar(255))",
     "INSERT INTO Suppose (firstname) VALUES  ('zuzie')"
+  ],
+  "queries": [
+    "SELECT * from Test"
   ]
 }

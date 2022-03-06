@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v4/stdlib"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -17,6 +17,7 @@ type Profile struct {
 	Database string   `json:"database"`
 	Port     string   `json:"port"`
 	Commands []string `json:"commands"`
+	Queries	 []string  `json:"queries"`
 }
 
 func handleErr(err error) {
@@ -38,10 +39,12 @@ func RunScript(profileLocation string, time string) {
 
 	handleErr(err)
 
-	loginString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", profile.Username,
+	loginString := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", profile.Username,
 		profile.Password, profile.Host, profile.Port, profile.Database)
 
-	db, err := sql.Open("postgres", loginString)
+	fmt.Println("Connecting with string ", loginString)
+
+	db, err := sql.Open("pgx", loginString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,10 +63,25 @@ func RunScript(profileLocation string, time string) {
 
 		_, err = db.Exec(commMod)
 
-		log.Println("Exec statement ", comm, " done!")
+		log.Println("Exec statement ", comm, " done! But maybe there are errors...")
 
 		handleErr(err)
 	}
+	log.Println("Logging Query for file ", profileLocation)
+
+	for _, comm := range profile.Queries {
+		commMod := strings.Trim(comm, "")
+		commMod = strings.Trim(commMod, " ")
+		commMod = strings.Trim(commMod, "\n")
+		commMod = strings.Trim(commMod, "\r")
+
+		_, err = db.Query(commMod)
+
+		log.Println("Query ", comm, " done! But maybe there are errors...")
+
+		handleErr(err)
+	}
+
 
 	log.Println("Done for ", profileLocation)
 }

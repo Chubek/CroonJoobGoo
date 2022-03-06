@@ -17,6 +17,8 @@ type Profile struct {
 	Database string   `json:"database"`
 	Port     string   `json:"port"`
 	Commands []string `json:"commands"`
+	Queries	 []string  `json:"queries"`
+
 }
 
 func handleErr(err error) {
@@ -61,6 +63,21 @@ func RunScript(profileLocation string, time string) {
 		_, err = db.Exec(commMod)
 
 		log.Println("Exec statement ", comm, " done!")
+
+		handleErr(err)
+	}
+
+	log.Println("Logging Query for file ", profileLocation)
+
+	for _, comm := range profile.Queries {
+		commMod := strings.Trim(comm, "")
+		commMod = strings.Trim(commMod, " ")
+		commMod = strings.Trim(commMod, "\n")
+		commMod = strings.Trim(commMod, "\r")
+
+		_, err = db.Query(commMod)
+
+		log.Println("Query ", comm, " done! But maybe there are errors...")
 
 		handleErr(err)
 	}
