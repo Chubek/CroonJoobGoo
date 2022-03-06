@@ -1,13 +1,14 @@
 package postgresqlrunner
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/jackc/pgx/v4"
 	"io/ioutil"
 	"log"
 	"strings"
+	"context"
+
 )
 
 type Profile struct {
@@ -18,6 +19,7 @@ type Profile struct {
 	Port     string   `json:"port"`
 	Commands []string `json:"commands"`
 	Queries	 []string  `json:"queries"`
+	SaveFile string    `json:"save_file"`
 }
 
 func handleErr(err error) {
@@ -44,14 +46,11 @@ func RunScript(profileLocation string, time string) {
 
 	fmt.Println("Connecting with string ", loginString)
 
-	db, err := sql.Open("pgx", loginString)
+	db, err := pgx.Connect(context.Background(), loginString)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func(db *sql.DB) {
-		err := db.Close()
-		handleErr(err)
-	}(db)
+	defer db.Close(context.Background())
 
 	log.Println("Logging Exec for file ", profileLocation)
 
@@ -61,7 +60,7 @@ func RunScript(profileLocation string, time string) {
 		commMod = strings.Trim(commMod, "\n")
 		commMod = strings.Trim(commMod, "\r")
 
-		_, err = db.Exec(commMod)
+		_, err = db.Exec(context.Background(), commMod)
 
 		log.Println("Exec statement ", comm, " done! But maybe there are errors...")
 
@@ -69,19 +68,38 @@ func RunScript(profileLocation string, time string) {
 	}
 	log.Println("Logging Query for file ", profileLocation)
 
+	var allRows []interface{}
+
 	for _, comm := range profile.Queries {
 		commMod := strings.Trim(comm, "")
 		commMod = strings.Trim(commMod, " ")
 		commMod = strings.Trim(commMod, "\n")
 		commMod = strings.Trim(commMod, "\r")
 
-		_, err = db.Query(commMod)
+		res, err := db.Query(context.Background(), commMod)
 
-		log.Println("Query ", comm, " done! But maybe there are errors...")
+		log.Println("Query ", comm, " done! But maybe there are errors, if there are, they will show up...")
 
 		handleErr(err)
+
+		for res.Next() {
+			var rowInterface interface{}
+
+			res.Scan(&rowInterface)
+
+			log.Println("Row: ", rowInterface)
+
+			allRows = append(allRows, rowInterface)
+
+		}
+
+		
 	}
+	log.Println("Saving to text file...")
 
+	file, _ := json.MarshalIndent(allRows, "", " ")
 
-	log.Println("Done for ", profileLocation)
+	_ = ioutil.WriteFile(profile.SaveFile, file, 0644)
+
+	log.Println("Done for ", profileLocation, " if no errors appeared, it should be A-Ok.")
 }

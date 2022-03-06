@@ -67,18 +67,22 @@ func RunScript(profileLocation string, time string) {
 	}
 
 	log.Println("Logging Query for file ", profileLocation)
-
+	
 	for _, comm := range profile.Queries {
 		commMod := strings.Trim(comm, "")
 		commMod = strings.Trim(commMod, " ")
 		commMod = strings.Trim(commMod, "\n")
 		commMod = strings.Trim(commMod, "\r")
 
-		_, err = db.Query(commMod)
+		_, err := db.Query(commMod)
 
 		log.Println("Query ", comm, " done! But maybe there are errors...")
 
 		handleErr(err)
+
+		log.Println("Saving query results (if no error, and if any)...")
+
+	
 	}
 
 	log.Println("Done for ", profileLocation)
