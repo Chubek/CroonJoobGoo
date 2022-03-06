@@ -1,14 +1,15 @@
 {
-  "username": "test_user",
-  "password": "test",
+  "username": "superchubak",
+  "password": "supsup",
   "host": "localhost",
-  "database": "test_user",
-  "port": "5432",
+  "database": "test_db",
+  "port": "3306",
   "commands": [
-    "CREATE TABLE Test (firstname varchar(255))",
-    "INSERT INTO Suppose (firstname) VALUES  ('zuzie')"
+    "CREATE TABLE Suppose2 (firstname varchar(255))",
+    "INSERT INTO Suppose2 (firstname) VALUES  ('zuzie')"
   ],
   "queries": [
-    "SELECT * from Test"
-  ]
+    "SELECT * FROM Suppose2"
+  ],
+  "save_file": "./dump.json"
 }

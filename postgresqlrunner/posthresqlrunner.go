@@ -68,7 +68,7 @@ func RunScript(profileLocation string, time string) {
 	}
 	log.Println("Logging Query for file ", profileLocation)
 
-	var allRows []interface{}
+	var allRows [][]string
 
 	for _, comm := range profile.Queries {
 		commMod := strings.Trim(comm, "")
@@ -78,22 +78,25 @@ func RunScript(profileLocation string, time string) {
 
 		res, err := db.Query(context.Background(), commMod)
 
-		log.Println("Query ", comm, " done! But maybe there are errors, if there are, they will show up...")
+		log.Println("Query ", comm, " done! But maybe there are errors...")
 
 		handleErr(err)
 
+		log.Println("Saving query results (if no error, and if any)...")
+
+		var currRow []string
+
 		for res.Next() {
-			var rowInterface interface{}
+			var rowInterface string
 
 			res.Scan(&rowInterface)
 
-			log.Println("Row: ", rowInterface)
+			fmt.Println("Got ", rowInterface)
 
-			allRows = append(allRows, rowInterface)
+			currRow = append(currRow, rowInterface)
 
 		}
-
-		
+		allRows = append(allRows, currRow)
 	}
 	log.Println("Saving to text file...")
 

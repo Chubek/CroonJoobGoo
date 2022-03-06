@@ -4,10 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"io/ioutil"
 	"log"
 	"strings"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Profile struct {
@@ -17,7 +18,8 @@ type Profile struct {
 	Database string   `json:"database"`
 	Port     string   `json:"port"`
 	Commands []string `json:"commands"`
-	Queries	 []string  `json:"queries"`
+	Queries  []string `json:"queries"`
+	SaveFile string   `json:"save_file"`
 }
 
 func handleErr(err error) {
@@ -67,14 +69,16 @@ func RunScript(profileLocation string, time string) {
 	}
 
 	log.Println("Logging Query for file ", profileLocation)
-	
+
+	var allRows [][]string
+
 	for _, comm := range profile.Queries {
 		commMod := strings.Trim(comm, "")
 		commMod = strings.Trim(commMod, " ")
 		commMod = strings.Trim(commMod, "\n")
 		commMod = strings.Trim(commMod, "\r")
 
-		_, err := db.Query(commMod)
+		res, err := db.Query(commMod)
 
 		log.Println("Query ", comm, " done! But maybe there are errors...")
 
@@ -82,8 +86,26 @@ func RunScript(profileLocation string, time string) {
 
 		log.Println("Saving query results (if no error, and if any)...")
 
-	
+		var currRow []string
+
+		for res.Next() {
+			var rowInterface string
+
+			res.Scan(&rowInterface)
+
+			fmt.Println("Got ", rowInterface)
+
+			currRow = append(currRow, rowInterface)
+
+		}
+		allRows = append(allRows, currRow)
 	}
+
+	log.Println("Saving to text file...")
+
+	file, _ := json.MarshalIndent(allRows, "", " ")
+
+	_ = ioutil.WriteFile(profile.SaveFile, file, 0644)
 
 	log.Println("Done for ", profileLocation)
 }
