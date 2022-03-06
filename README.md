@@ -32,7 +32,7 @@ for example:
 The array can contain as many objects as you desire. If you don't wanna pass a day and want to check "all_days", pass an empty array.
 Same is true about hour and day. Otherwise pass days, hours, and minutes; and it will run the job at that time.
 
-Supported SQL types are: MYSQL, MSSQL, POSTGRESSQL (keep in mind, it should be in capital!)
+Supported SQL types are: MYSQL, MSSQL, POSTGRESQL (keep in mind, it should be in capital!)
 
 The sub-config file looks like this:
 
@@ -46,9 +46,17 @@ The sub-config file looks like this:
   "commands": [
     "CREATE TABLE Test (firstname varchar(255))",
     "INSERT INTO Suppose (firstname) VALUES  ('zuzie')"
-  ]
+  ],
+  "queries": [
+    "SELECT * FROM Test",
+  ],
+  "save_file": "~/dump.json"
+
 }
 ```
+
+> Comamnd is something you execute. Query is something that gets you results. These results are savd in `save_file`.
+
 
 There's one in `example` folder. 
 
